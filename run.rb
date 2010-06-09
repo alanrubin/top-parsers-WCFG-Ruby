@@ -104,9 +104,8 @@ while result.length < k
   #p b.to_s
   break if(b.tree==nil)
   t = b.pop
-  f = find_in_Fs(b.s,b.e,b.x)
-  f.tree = t[0]
-  f.probability = t[1]
+  # What's the importance of f ?
+  find_in_Fs(b.s,b.e,b.x).insert(t)
   result << t if b.x == "S" && b.s == 1 && b.e == (w.length+1)
   # X -> A
   T.reject { |cfg| cfg.to != [b.x] }.each do |cfg|
@@ -115,15 +114,29 @@ while result.length < k
   # X -> A0 A
   T.reject { |cfg| cfg.to.length != 2 || cfg.to[1] != b.x }.each do |cfg|
     (1..b.s).each do |s_apos|
-      t0 = find_in_L(s_apos,b.s,cfg.to[0])  # How to search in Fs ?
-      find_in_L(s_apos,b.e,cfg.from).offer("#{cfg.from}(#{cfg.to[0]},#{t[0]})",cfg.probability*t[1])
+      t_a0 = []
+      b_a0 = find_in_L(s_apos,b.s,cfg.to[0])
+      f_a0 = find_in_Fs(s_apos,b.s,cfg.to[0])
+      t_a0 << b_a0.get if(b_a0 && b_a0.get)
+      (t_a0 + f_a0.list) if(f_a0 && !f_a0.list.empty?)
+      
+      t_a0.each do |t0|
+        find_in_L(s_apos,b.e,cfg.from).offer("#{cfg.from}(#{t0[0]},#{t[0]})",t0[1]*t[1])
+      end
     end
   end
   # X -> A A0
   T.reject { |cfg| cfg.to.length != 2 || cfg.to[0] != b.x }.each do |cfg|
     (b.e..(w.length+1)).each do |e_apos|
-      t0 = find_in_L(b.e,e_apos,cfg.to[1])  # How to search in Fs ?
-      find_in_L(b.s,e_apos,cfg.from).offer("#{cfg.from}(#{t[0]},#{cfg.to[1]})",cfg.probability*t[1])
+      t_a0 = []
+      b_a0 = find_in_L(b.e,e_apos,cfg.to[1])
+      f_a0 = find_in_Fs(b.e,e_apos,cfg.to[1])
+      t_a0 << b_a0.get if(b_a0 && b_a0.get)
+      (t_a0 + f_a0.list) if(f_a0 && !f_a0.list.empty?)
+      
+      t_a0.each do |t0|
+        find_in_L(b.s,e_apos,cfg.from).offer("#{cfg.from}(#{t[0]},#{t0[0]})",t0[1]*t[1])
+      end
     end
   end
   
@@ -131,8 +144,8 @@ while result.length < k
   $l_sorted = $l_sorted.sort_by{ |b| 1-b.probability }
   
   #break if i==10
-  #i = i+1
-  
+  i = i+1
+  #p i
 end
 
 
@@ -140,7 +153,7 @@ end
 #$l_sorted.each do |b|
 #  p b.to_s
 #end
-
+p i
 p result
 
 
