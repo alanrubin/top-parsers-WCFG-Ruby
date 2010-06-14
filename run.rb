@@ -1,4 +1,4 @@
-require "priority_queue"
+require "b_queue"
 require "context_free_rule"
 
 # Convert w to array of words
@@ -71,8 +71,8 @@ Fs = []
 (NT+w).each do |x|
   (1..(w.length+1)).each do |s|
     (s..(w.length+1)).each do |e|
-      $l_sorted << PriorityQueue.new(s,e,x,k)
-      Fs << PriorityQueue.new(s,e,x,k)
+      $l_sorted << BQueue.new(s,e,x,k)
+      Fs << BQueue.new(s,e,x,k)
     end
   end
 end

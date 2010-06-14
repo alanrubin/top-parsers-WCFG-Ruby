@@ -1,5 +1,5 @@
 # Represents B in the algorithm with capacity 1
-class PriorityQueue
+class BQueue
   
   attr_reader :s
   attr_reader :e
