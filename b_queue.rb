@@ -6,16 +6,12 @@ class BQueue
   attr_accessor :x
   attr_accessor :tree
   attr_accessor :probability
-  attr_accessor :capacity
-  attr_reader :list
   
   def initialize(s,e,x,capacity)
     @s = s
     @e = e
     @x = x
     @probability = 0
-    @capacity = capacity
-    @list = []
   end
   
   def to_s
@@ -34,14 +30,6 @@ class BQueue
     @probability = 0
     @tree = nil  
     out
-  end
-  
-  def get
-    [@tree,@probability] if(@tree)
-  end
-  
-  def insert(t)
-    @list.push t
   end
   
 end

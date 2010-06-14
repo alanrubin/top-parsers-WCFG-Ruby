@@ -58,13 +58,6 @@ def find_in_L(s,e,x)
   return $l_sorted.select{ |b| b.s==s && b.e==e && b.x==x  }[0]
 end
 
-def find_in_Fs(s,e,x)
-  return Fs.select{ |b| b.s==s && b.e==e && b.x==x  }[0]
-end
-
-# Fs - stores the F
-Fs = []
-
 #### Initialize the data structures ####
 
 # Creating the B^{s,e)>X and B^{s,e)>Ws and inserting into L - Line 2-8
@@ -72,7 +65,6 @@ Fs = []
   (1..(w.length+1)).each do |s|
     (s..(w.length+1)).each do |e|
       $l_sorted << BQueue.new(s,e,x,k)
-      Fs << BQueue.new(s,e,x,k)
     end
   end
 end
@@ -107,46 +99,29 @@ i=0
 
 while result.length < k
   b = $l_sorted.first
-  #p b.to_s
   break if(b.tree==nil)
   t = b.pop
-  # What's the importance of f ?
-  find_in_Fs(b.s,b.e,b.x).insert(t)
   result << t if b.x == "S" && b.s == 1 && b.e == (w.length+1)
   # X -> A
-  T.select { |cfg| cfg.to == [b.x] }.each do |cfg|
-    find_in_L(b.s,b.e,cfg.from).offer("#{cfg.from}(#{t[0]})",cfg.probability*t[1])
+  T.select { |rule| rule.to == [b.x] }.each do |rule|
+    find_in_L(b.s,b.e,rule.from).offer("#{rule.from}(#{t[0]})",rule.probability*t[1])
   end
   # X -> A0 A
-  T.select { |cfg| cfg.to.length == 2 && cfg.to[1] == b.x }.each do |cfg|
+  T.select { |rule| rule.to.length == 2 && rule.to[1] == b.x }.each do |rule|
     (1..b.s).each do |s_apos|
-      t_a0 = []
-      b_a0 = find_in_L(s_apos,b.s,cfg.to[0])
-      f_a0 = find_in_Fs(s_apos,b.s,cfg.to[0])
-      t_a0 << b_a0.get if(b_a0 && b_a0.get)
-      (t_a0 + f_a0.list) if(f_a0 && !f_a0.list.empty?)
-      
-      t_a0.each do |t0|
-        find_in_L(s_apos,b.e,cfg.from).offer("#{cfg.from}(#{t0[0]},#{t[0]})",t0[1]*t[1])
-      end
+      b_a0 = find_in_L(s_apos,b.s,rule.to[0])
+      find_in_L(s_apos,b.e,rule.from).offer("#{rule.from}(#{b_a0.tree},#{t[0]})",b_a0.probability*t[1]) if(b_a0) 
     end
   end
   # X -> A A0
-  T.select { |cfg| cfg.to.length == 2 && cfg.to[0] == b.x }.each do |cfg|
+  T.select { |rule| rule.to.length == 2 && rule.to[0] == b.x }.each do |rule|
     (b.e..(w.length+1)).each do |e_apos|
-      t_a0 = []
-      b_a0 = find_in_L(b.e,e_apos,cfg.to[1])
-      f_a0 = find_in_Fs(b.e,e_apos,cfg.to[1])
-      t_a0 << b_a0.get if(b_a0 && b_a0.get)
-      (t_a0 + f_a0.list) if(f_a0 && !f_a0.list.empty?)
-      
-      t_a0.each do |t0|
-        find_in_L(b.s,e_apos,cfg.from).offer("#{cfg.from}(#{t[0]},#{t0[0]})",t0[1]*t[1])
-      end
+      b_a0 = find_in_L(b.e,e_apos,rule.to[1])
+      find_in_L(b.s,e_apos,rule.from).offer("#{rule.from}(#{t[0]},#{b_a0.tree})",b_a0.probability*t[1]) if(b_a0) 
     end
   end
   
-  # Sorting
+  # Sorting l
   $l_sorted = $l_sorted.sort_by{ |b| 1-b.probability }
   
   i = i+1
@@ -155,8 +130,8 @@ end
 # $l_sorted.each do |b|
 #  p b.to_s
 # end
-p i
-p result
+p "Iterations: " + i.to_s
+p "Result: " + result.to_s
 
 
 
