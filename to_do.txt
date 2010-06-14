@@ -1,0 +1,5 @@
+- Penn Treebank Project
+- Try to make with k > 1
+- Start to think how it is done with database systems
+- Ask to send email with code and treebank data (free)
+- Berkeley parser google code - use java program to interpret .gr to text file

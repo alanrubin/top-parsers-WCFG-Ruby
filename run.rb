@@ -1,7 +1,7 @@
 require "priority_queue"
 require "context_free_rule"
 
-# Convert w to array
+# Convert w to array of words
 w = "virgina woolf orlando biography".scan(/\w+/)
 k = 1
 
@@ -45,21 +45,21 @@ T << ContextFreeRule.new("AU",["louisa","V"],0.3)
 
 T << ContextFreeRule.new("V",["may","alcott"],1)
 
-# Create NT - from unique array (non-terminal list)
-NT = T.map { |cfg| cfg.from  }.uniq
+# Create Non-Terminals unique array (non-terminal list)
+NT = T.map { |rule| rule.from }.uniq
 
 # Create X -> e (empty) list
-TEmpty = T.reject {|cfg| cfg.to!=["EMPTY"]}
+TEmpty = T.select {|cfg| cfg.to==["EMPTY"]}
 
 # l_sorted - empty stored list
 $l_sorted = []
 
 def find_in_L(s,e,x)
-  return $l_sorted.reject{ |b| b.s!=s || b.e!=e || b.x!=x  }[0]
+  return $l_sorted.select{ |b| b.s==s && b.e==e && b.x==x  }[0]
 end
 
 def find_in_Fs(s,e,x)
-  return Fs.reject{ |b| b.s!=s || b.e!=e || b.x!=x  }[0]
+  return Fs.select{ |b| b.s==s && b.e==e && b.x==x  }[0]
 end
 
 # Fs - stores the F
@@ -114,11 +114,11 @@ while result.length < k
   find_in_Fs(b.s,b.e,b.x).insert(t)
   result << t if b.x == "S" && b.s == 1 && b.e == (w.length+1)
   # X -> A
-  T.reject { |cfg| cfg.to != [b.x] }.each do |cfg|
+  T.select { |cfg| cfg.to == [b.x] }.each do |cfg|
     find_in_L(b.s,b.e,cfg.from).offer("#{cfg.from}(#{t[0]})",cfg.probability*t[1])
   end
   # X -> A0 A
-  T.reject { |cfg| cfg.to.length != 2 || cfg.to[1] != b.x }.each do |cfg|
+  T.select { |cfg| cfg.to.length == 2 && cfg.to[1] == b.x }.each do |cfg|
     (1..b.s).each do |s_apos|
       t_a0 = []
       b_a0 = find_in_L(s_apos,b.s,cfg.to[0])
@@ -132,7 +132,7 @@ while result.length < k
     end
   end
   # X -> A A0
-  T.reject { |cfg| cfg.to.length != 2 || cfg.to[0] != b.x }.each do |cfg|
+  T.select { |cfg| cfg.to.length == 2 && cfg.to[0] == b.x }.each do |cfg|
     (b.e..(w.length+1)).each do |e_apos|
       t_a0 = []
       b_a0 = find_in_L(b.e,e_apos,cfg.to[1])
