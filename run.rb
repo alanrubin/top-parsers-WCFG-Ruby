@@ -2,7 +2,7 @@ require "priority_queue"
 require "context_free_rule"
 
 # Convert w to array
-w = "woolf virgina orlando biography".scan(/\w+/)
+w = "virgina woolf orlando biography".scan(/\w+/)
 k = 1
 
 # creating the WCFG rules array
@@ -95,6 +95,12 @@ end
 # Sorting L by highest probabilities
 $l_sorted = $l_sorted.sort_by{ |b| 1-b.probability }
 
+# $l_sorted.each do |b|
+#  p b.to_s
+# end
+
+# exit
+
 ### Repeat: top, pop and update
 result = []
 i=0
@@ -143,16 +149,12 @@ while result.length < k
   # Sorting
   $l_sorted = $l_sorted.sort_by{ |b| 1-b.probability }
   
-  #break if i==10
   i = i+1
-  #p i
 end
 
-
-
-#$l_sorted.each do |b|
+# $l_sorted.each do |b|
 #  p b.to_s
-#end
+# end
 p i
 p result
 
