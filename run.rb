@@ -3,7 +3,7 @@ require "context_free_rule"
 
 # Convert w to array of words
 w = "virgina woolf orlando biography".scan(/\w+/)
-k = 1
+k = 6
 
 # creating the WCFG rules array
 T = []
@@ -54,8 +54,15 @@ TEmpty = T.select {|cfg| cfg.to==["EMPTY"]}
 # l_sorted - empty stored list
 $l_sorted = []
 
+# Hash of arrays - the key is s.to_s + e.to_s + x.to_s
+$f = {}
+
 def find_in_L(s,e,x)
   return $l_sorted.select{ |b| b.s==s && b.e==e && b.x==x  }[0]
+end
+
+def key(s,e,x)
+  s.to_s + "-" + e.to_s + "-" + x.to_s
 end
 
 #### Initialize the data structures ####
@@ -65,6 +72,7 @@ end
   (1..(w.length+1)).each do |s|
     (s..(w.length+1)).each do |e|
       $l_sorted << BQueue.new(s,e,x,k)
+      $f[key(s,e,x)] = []
     end
   end
 end
@@ -74,6 +82,7 @@ end
   e = s+1
   b = find_in_L(s,e,w[s-1]) 
   b.offer(w[s-1],1)
+  $f[key(s,e,w[s-1])] = []
 end
 
 # Offering the B^{s,s)>X -> Empty with defined probability
@@ -101,6 +110,8 @@ while result.length < k
   b = $l_sorted.first
   break if(b.top==nil)
   t = b.pop
+  $f[key(b.s,b.e,b.x)].push(t)
+  b.capacity = b.capacity - 1
   result << t if b.x == "S" && b.s == 1 && b.e == (w.length+1)
   # X -> A
   T.select { |rule| rule.to == [b.x] }.each do |rule|
@@ -110,20 +121,30 @@ while result.length < k
   T.select { |rule| rule.to.length == 2 && rule.to[1] == b.x }.each do |rule|
     (1..b.s).each do |s_apos|
       b_a0 = find_in_L(s_apos,b.s,rule.to[0])
-      find_in_L(s_apos,b.e,rule.from).offer("#{rule.from}(#{b_a0.top[0]},#{t[0]})",b_a0.top[1]*t[1]) if(b_a0 && b_a0.top) 
+      t0_list = []
+      t0_list.push(b_a0.top) if (b_a0 && b_a0.top)
+      t0_list.concat($f[key(s_apos,b.s,rule.to[0])]) if $f[key(s_apos,b.s,rule.to[0])]
+      t0_list.each do |t0|
+        find_in_L(s_apos,b.e,rule.from).offer("#{rule.from}(#{t0[0]},#{t[0]})",t0[1]*t[1])
+      end
     end
   end
   # X -> A A0
   T.select { |rule| rule.to.length == 2 && rule.to[0] == b.x }.each do |rule|
     (b.e..(w.length+1)).each do |e_apos|
       b_a0 = find_in_L(b.e,e_apos,rule.to[1])
-      find_in_L(b.s,e_apos,rule.from).offer("#{rule.from}(#{t[0]},#{b_a0.top[0]})",b_a0.top[1]*t[1]) if(b_a0 && b_a0.top) 
+      t0_list = []
+      t0_list.push(b_a0.top) if (b_a0 && b_a0.top)
+      t0_list.concat($f[key(b.e,e_apos,rule.to[1])]) if $f[key(b.e,e_apos,rule.to[1])]
+      t0_list.each do |t0|
+        find_in_L(b.s,e_apos,rule.from).offer("#{rule.from}(#{t[0]},#{t0[0]})",t0[1]*t[1]) if(b_a0 && b_a0.top)
+      end
     end
   end
-  
+
   # Sorting l
   $l_sorted = $l_sorted.sort_by{ |b| 1-(b.top ? b.top[1] : 0) }
-  
+
   i = i+1
 end
 
@@ -131,7 +152,8 @@ end
 #  p b.to_s
 # end
 p "Iterations: " + i.to_s
-p "Result: " + result.to_s
+p "Result: "
+result.map { |item| p item  } 
 
 
 
