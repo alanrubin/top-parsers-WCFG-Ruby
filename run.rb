@@ -85,7 +85,7 @@ end
 end
 
 # Sorting L by highest probabilities
-$l_sorted = $l_sorted.sort_by{ |b| 1-b.probability }
+$l_sorted = $l_sorted.sort_by{ |b| 1-(b.top ? b.top[1] : 0) }
 
 # $l_sorted.each do |b|
 #  p b.to_s
@@ -99,7 +99,7 @@ i=0
 
 while result.length < k
   b = $l_sorted.first
-  break if(b.tree==nil)
+  break if(b.top==nil)
   t = b.pop
   result << t if b.x == "S" && b.s == 1 && b.e == (w.length+1)
   # X -> A
@@ -110,19 +110,19 @@ while result.length < k
   T.select { |rule| rule.to.length == 2 && rule.to[1] == b.x }.each do |rule|
     (1..b.s).each do |s_apos|
       b_a0 = find_in_L(s_apos,b.s,rule.to[0])
-      find_in_L(s_apos,b.e,rule.from).offer("#{rule.from}(#{b_a0.tree},#{t[0]})",b_a0.probability*t[1]) if(b_a0) 
+      find_in_L(s_apos,b.e,rule.from).offer("#{rule.from}(#{b_a0.top[0]},#{t[0]})",b_a0.top[1]*t[1]) if(b_a0 && b_a0.top) 
     end
   end
   # X -> A A0
   T.select { |rule| rule.to.length == 2 && rule.to[0] == b.x }.each do |rule|
     (b.e..(w.length+1)).each do |e_apos|
       b_a0 = find_in_L(b.e,e_apos,rule.to[1])
-      find_in_L(b.s,e_apos,rule.from).offer("#{rule.from}(#{t[0]},#{b_a0.tree})",b_a0.probability*t[1]) if(b_a0) 
+      find_in_L(b.s,e_apos,rule.from).offer("#{rule.from}(#{t[0]},#{b_a0.top[0]})",b_a0.top[1]*t[1]) if(b_a0 && b_a0.top) 
     end
   end
   
   # Sorting l
-  $l_sorted = $l_sorted.sort_by{ |b| 1-b.probability }
+  $l_sorted = $l_sorted.sort_by{ |b| 1-(b.top ? b.top[1] : 0) }
   
   i = i+1
 end

@@ -68,6 +68,46 @@ describe BQueue, "when created" do
     t.should eql ["A(B)",0.5]
   end
   
+  it "should retrieve the top element" do
+    b1 = BQueue.new 1,2,"AU", 2
+    b1.offer("A(B)",0.5)
+    b1.offer("A2(B2)",0.7)
+    t = b1.top
+    t.should eql ["A2(B2)",0.7]
+    t = b1.top
+    t.should eql ["A2(B2)",0.7]
+  end
+  
+  it "should retrieve the top element after poping" do
+    b1 = BQueue.new 1,2,"AU", 2
+    b1.offer("A(B)",0.5)
+    b1.offer("A2(B2)",0.7)
+    t = b1.pop
+    t.should eql ["A2(B2)",0.7]
+    t = b1.top
+    t.should eql ["A(B)",0.5]
+  end
+  
+  it "should return null after poping all elements" do
+    b1 = BQueue.new 1,2,"AU", 2
+    b1.offer("A(B)",0.5)
+    b1.offer("A2(B2)",0.7)
+    b1.pop
+    b1.pop
+    t = b1.pop
+    t.should be_nil
+  end
+  
+  it "should return null when toping empty queue" do
+    b1 = BQueue.new 1,2,"AU", 2
+    b1.offer("A(B)",0.5)
+    b1.offer("A2(B2)",0.7)
+    b1.pop
+    b1.pop
+    t = b1.top
+    t.should be_nil
+  end
+  
 end
 
 describe ContextFreeRule, "when created" do

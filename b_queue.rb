@@ -82,7 +82,11 @@ class BQueue
   def pop
     # Retrieve the highest probability tree and delete it from array
     tree = @list.slice!(0)
-    [tree.symbol, tree.probability]
+    [tree.symbol, tree.probability] if tree
+  end
+  
+  def top
+    [@list[0].symbol, @list[0].probability] if @list[0]
   end
   
 end
